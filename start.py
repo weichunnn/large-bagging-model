@@ -14,16 +14,7 @@ weave.init("together-weave")
 
 SYSTEM_CONTENT = "You are a debate moderator. Be descriptive and helpful."
 MODEL = "openai/gpt-4o-2024-08-06"
-DEBATE_ROUNDS = 2
 QUESTION = "Assume a train is headed to 5 children tied to the tracks. You have the option to pull a lever and divert the train to a track with 1 grandma. Should you pull the lever? Why or why not?"
-
-FAMOUS_MODELS = [
-    "openai/gpt-4o-2024-08-06",
-    "meta-llama/llama-3.1-405b-instruct",
-    "google/gemini-pro-1.5",
-    # "cohere/command-r-plus-08-2024",
-    "anthropic/claude-3.5-sonnet",
-]
 
 
 class Agent(BaseModel):
@@ -71,7 +62,7 @@ def generate_scenario(question):
     )
 
 
-def simulate_debate(question=QUESTION, num_iterations=3, agent_model_map=None, debate_styles=None):
+def simulate_debate(question, num_iterations, agent_model_map, debate_styles):
     scenario = generate_scenario(question)
 
     debate_data = {
@@ -174,9 +165,9 @@ def simulate_debate(question=QUESTION, num_iterations=3, agent_model_map=None, d
 
     return debate_data
 
-def run_single_debate(subset, styles):
+def run_single_debate(question, num_iterations, subset, styles):
     print(f"\nRunning debate with models: {subset}")
-    scenario = generate_scenario(QUESTION)
+    scenario = generate_scenario(question)
 
     if len(scenario.agents) != 2:
         print("Error: Scenario must have exactly 2 agents for this setup.")
@@ -188,24 +179,43 @@ def run_single_debate(subset, styles):
     }
 
     return simulate_debate(
-        question=QUESTION, num_iterations=DEBATE_ROUNDS, agent_model_map=agent_model_map, debate_styles=styles
+        question=question, 
+        num_iterations=num_iterations, 
+        agent_model_map=agent_model_map, 
+        debate_styles=styles
     )
 
-def run_debates():
-    model_subsets = [FAMOUS_MODELS[i : i + 2] for i in range(0, len(FAMOUS_MODELS), 2)]
-    styles = generate_style_prompt(len(model_subsets) * 2)  # Generate twice as many styles
+def run_debates(num_debates, question, models, num_iterations):
+    if num_debates * 2 > len(models):
+        raise ValueError("Not enough models for the requested number of debates.")
+    
+    model_subsets = [models[i:i+2] for i in range(0, num_debates * 2, 2)]
+    styles = generate_style_prompt(num_debates * 2)  # Generate twice as many styles
     
     debate_tasks = []
     for i, subset in enumerate(model_subsets):
         debate_styles = styles.style_description[i*2 : i*2+2]  # Get two unique styles for each debate
-        debate_tasks.append((subset, debate_styles))
+        debate_tasks.append((question, num_iterations, subset, debate_styles))
     
     with concurrent.futures.ThreadPoolExecutor() as executor:
         all_debate_results = list(executor.map(lambda x: run_single_debate(*x), debate_tasks))
 
     return [result for result in all_debate_results if result is not None]
 
+# Example usage
+FAMOUS_MODELS = [
+    "openai/gpt-4o-2024-08-06",
+    "meta-llama/llama-3.1-405b-instruct",
+    "google/gemini-pro-1.5",
+    # "cohere/command-r-plus-08-2024",
+    "anthropic/claude-3.5-sonnet",
+]
 
-all_results = run_debates()
+custom_question = "Should artificial intelligence be given the same rights as humans? Why or why not?"
+selected_models = FAMOUS_MODELS[:4]  # Use the first 4 models from FAMOUS_MODELS
+num_debates = 2
+num_iterations = 3
+
+all_results = run_debates(num_debates, custom_question, selected_models, num_iterations)
 
 evaluate_all_debates(all_results)

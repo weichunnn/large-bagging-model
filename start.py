@@ -17,7 +17,7 @@ QUESTION = "Can alternative energy effectively replace fossil fuels?"
 
 FAMOUS_MODELS = [
     "openai/gpt-4o-2024-08-06",
-    "openai/gpt-4o-2024-08-06"
+    "meta-llama/llama-3.1-405b-instruct"
 ]
 
 
@@ -34,22 +34,20 @@ class AgentDebate(BaseModel):
     argument: str
 
 
-def generate_user_content(
-    question,
-):
+def generate_user_content(question):
     return f"""
-  Given this scenario below:
-  
-  {question}
+    Given this scenario below:
+    
+    {question}
 
-  Break down the scenario down to all of the subject of interest involved ie persona.
+    Break down the scenario into all of the subjects of interest involved (i.e., personas).
 
-  Then, create a debate template that can be used to argue for or against for each of the subject of interest ie instructions
+    Then, create a debate template that can be used to argue for or against each subject of interest (i.e., instructions).
 
-  Note:
-  1.  There should always be only 2 persona in a debate. For and Against.
-  2.  The debate should be structured in such a way that it is easy to follow and understand.
-  """
+    Note:
+    1. There should always be only 2 personas in a debate: For and Against.
+    2. The debate should be structured in such a way that it is easy to follow and understand.
+    """
 
 
 config = OpenAI(
@@ -94,6 +92,7 @@ def simulate_debate(question=QUESTION, num_iterations=3):
         print(f"- {agent}: using {model}")
     print()
 
+    # Collect opening statements
     for i, agent in enumerate(scenario.agents, 1):
         response = client.chat.completions.create(
             model=agent_model_map[agent.persona],
@@ -117,12 +116,12 @@ def simulate_debate(question=QUESTION, num_iterations=3):
             f"Agent {i} ({agent.persona}) Opening Statement: {opening_statement}"
         )
 
+    # Debate iterations
     for iteration in range(1, num_iterations + 1):
         iteration_data = {"iteration": iteration, "arguments": []}
         for i, agent in enumerate(scenario.agents, 1):
-            context = "\n".join(
-                [f"Iteration {i+1}: {msg}" for i, msg in enumerate(debate_history)]
-            )
+            # Use the full debate history (opening statements + all previous arguments)
+            context = "\n".join(debate_history)
 
             response = client.chat.completions.create(
                 model=agent_model_map[agent.persona],
@@ -146,7 +145,9 @@ def simulate_debate(question=QUESTION, num_iterations=3):
 
         debate_data["iterations"].append(iteration_data)
 
+    # Closing statements
     for i, agent in enumerate(scenario.agents, 1):
+        context = "\n".join(debate_history)  # Full debate history
         response = client.chat.completions.create(
             model=agent_model_map[agent.persona],
             response_model=AgentDebate,
@@ -157,7 +158,7 @@ def simulate_debate(question=QUESTION, num_iterations=3):
                 },
                 {
                     "role": "user",
-                    "content": f"Given the full debate history:\n{' '.join(debate_history)}\n\nProvide your closing statement for the debate.",
+                    "content": f"Given the full debate history:\n{context}\n\nProvide your closing statement for the debate.",
                 },
             ],
         )

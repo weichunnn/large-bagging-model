@@ -17,7 +17,15 @@ QUESTION = "Can alternative energy effectively replace fossil fuels?"
 
 FAMOUS_MODELS = [
     "openai/gpt-4o-2024-08-06",
-    "meta-llama/llama-3.1-405b-instruct"
+    "meta-llama/llama-3.1-405b-instruct",
+    "anthropic/claude-3-sonnet-20240229",
+    "google/gemini-pro",
+    "anthropic/claude-2.1",
+    "openai/gpt-3.5-turbo",
+    "meta-llama/llama-2-70b-chat",
+    "mistralai/mistral-7b-instruct",
+    "cohere/command-nightly",
+    "ai21/j2-ultra"
 ]
 
 

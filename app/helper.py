@@ -1,11 +1,10 @@
 from pprint import pprint
-from operator import itemgetter
 import json
 
 
 def sort_debates(debates, k, sort_type="top"):
     """
-    Sort debates by highest or lowest score across all proponent and opponent scores.
+    Sort debates by highest or lowest score considering both proponent and opponent scores separately.
 
     :param debates: Dictionary of debate dictionaries
     :param k: Number of top/bottom debates to return
@@ -14,14 +13,16 @@ def sort_debates(debates, k, sort_type="top"):
     """
     compare_func = max if sort_type == "top" else min
 
-    def get_score(debate):
+    def get_scores(debate):
         prop_score = debate["evaluation"]["proponent"]["score"]
         op_score = debate["evaluation"]["opponent"]["score"]
-        return compare_func(prop_score, op_score)
+        return prop_score, op_score
 
-    # Sort the debates based on the score
+    # Sort the debates based on both scores
     sorted_debates = sorted(
-        debates.items(), key=lambda x: get_score(x[1]), reverse=(sort_type == "top")
+        debates.items(),
+        key=lambda x: compare_func(get_scores(x[1])),
+        reverse=(sort_type == "top"),
     )
 
     # Return top/bottom k debates in the original format

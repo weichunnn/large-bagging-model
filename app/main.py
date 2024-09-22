@@ -3,7 +3,8 @@ import streamlit as st
 from helper import sort_debates
 from start import run_debates
 from evaluator import evaluate_all_debates, write_evaluations_to_file
-import time
+from gtts import gTTS
+from io import BytesIO
 
 
 def save_to_file(data, file_type):
@@ -113,18 +114,31 @@ if st.session_state.debate_run:
                 > debate["evaluation"]["opponent"]["score"]
                 else "opponent"
             )
+            loser = "opponent" if winner == "proponent" else "proponent"
 
             for part in parts:
                 if part.startswith("Proponent"):
                     with st.chat_message("proponent"):
                         st.markdown(
-                            f"**{part}**" if winner == "proponent" else f"_{part}_"
+                            f"**{part}**"
+                            if (is_top and winner == "proponent")
+                            or (not is_top and loser == "proponent")
+                            else f"_{part}_"
                         )
+
+                        # sound_file = BytesIO()
+                        # tts = gTTS(part, lang="en")
+                        # st.audio(sound_file)
                 elif part.startswith("Opponent"):
                     with st.chat_message("opponent"):
                         st.markdown(
-                            f"**{part}**" if winner == "opponent" else f"_{part}_"
+                            f"**{part}**"
+                            if (is_top and winner == "opponent")
+                            or (not is_top and loser == "opponent")
+                            else f"_{part}_"
                         )
+                        # sound_file = BytesIO()
+                        # tts = gTTS(part, lang="en")
 
             debate["winner"] = winner
 

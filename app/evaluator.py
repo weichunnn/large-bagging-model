@@ -34,7 +34,7 @@ class DebateResult(BaseModel):
 
 
 client = OpenAI(
-    api_key=st.secrets["OPENROUTER_API_KEY"],
+    api_key=os.environ.get("OPENROUTER_API_KEY"),
     base_url="https://openrouter.ai/api/v1",
 )
 

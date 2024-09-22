@@ -10,7 +10,7 @@ from style_generator import generate_style_prompt
 import streamlit as st
 
 load_dotenv()
-weave.init("together-weave", key=st.secrets["WB_KEY"])
+weave.init("together-weave")
 
 
 SYSTEM_CONTENT = "You are a debate moderator. Be descriptive and helpful."
@@ -44,7 +44,7 @@ def generate_user_content(question):
 
 
 config = OpenAI(
-    api_key=st.secrets["OPENROUTER_API_KEY"],
+    api_key=os.environ.get("OPENROUTER_API_KEY"),
     base_url="https://openrouter.ai/api/v1",
 )
 

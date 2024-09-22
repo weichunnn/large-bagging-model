@@ -3,8 +3,6 @@ import streamlit as st
 from helper import sort_debates
 from start import run_debates
 from evaluator import evaluate_all_debates, write_evaluations_to_file
-from gtts import gTTS
-from io import BytesIO
 
 
 def save_to_file(data, file_type):

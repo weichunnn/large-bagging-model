@@ -3,7 +3,7 @@ import json
 
 def extract_debates(type_deb: str) -> list:
     # Open the file containing the good debates
-    with open(f"{type_deb}_debates.txt", "r") as file:
+    with open(f"app/{type_deb}_debates.txt", "r") as file:
         content = file.read()
     if content == "":
         return []

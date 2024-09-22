@@ -6,6 +6,9 @@ import instructor
 from pydantic import BaseModel
 from openai import OpenAI
 
+from dotenv import load_dotenv
+load_dotenv()
+
 weave.init("together-weave")
 
 from extract_findings import extract_both_debates

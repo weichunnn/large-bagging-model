@@ -7,6 +7,9 @@ from datetime import datetime
 import json
 import pickle
 
+from dotenv import load_dotenv
+load_dotenv()
+
 weave.init("together-weave")
 
 

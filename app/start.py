@@ -7,6 +7,9 @@ from openai import OpenAI
 import concurrent.futures
 from style_generator import generate_style_prompt
 
+from dotenv import load_dotenv
+load_dotenv()
+
 weave.init("together-weave")
 
 

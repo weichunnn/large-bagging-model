@@ -4,12 +4,9 @@ import weave
 import instructor
 from pydantic import BaseModel
 from openai import OpenAI
-from dotenv import load_dotenv
 import concurrent.futures
 from style_generator import generate_style_prompt
-import streamlit as st
 
-load_dotenv()
 weave.init("together-weave")
 
 
@@ -88,9 +85,9 @@ def simulate_debate(question, num_iterations, agent_model_map, debate_styles):
     agent_model_list = list(agent_model_map.values())
     for i, (agent, model) in enumerate(zip(scenario.agents, agent_model_list)):
         print(f"- {agent.persona}: using {model}")
-        agent_model_map[
-            agent.persona
-        ] = model  # Update the map with the correct persona
+        agent_model_map[agent.persona] = (
+            model  # Update the map with the correct persona
+        )
     print()
 
     # Collect opening statements

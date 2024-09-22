@@ -4,12 +4,9 @@ import weave
 import instructor
 from pydantic import BaseModel
 from openai import OpenAI
-from dotenv import load_dotenv
 import concurrent.futures
 from style_generator import generate_style_prompt
-import streamlit as st
 
-load_dotenv()
 weave.init("together-weave")
 
 

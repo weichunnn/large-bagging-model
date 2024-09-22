@@ -1,17 +1,11 @@
 import os
 import weave
 
-import instructor
 from pydantic import BaseModel
 from openai import OpenAI
 from datetime import datetime
 import json
 import pickle
-import streamlit as st
-
-from dotenv import load_dotenv
-
-load_dotenv()
 
 weave.init("together-weave")
 

@@ -1,4 +1,3 @@
-
 import os
 from typing import List
 import weave
@@ -6,14 +5,10 @@ import weave
 import instructor
 from pydantic import BaseModel
 from openai import OpenAI
-import streamlit as st
 
 weave.init("together-weave")
 
 from extract_findings import extract_both_debates
-
-from dotenv import load_dotenv
-load_dotenv()
 
 config = OpenAI(
     api_key=os.environ.get("OPENROUTER_API_KEY"),
@@ -22,12 +17,14 @@ config = OpenAI(
 
 client = instructor.from_openai(config)
 
+
 class StyleList(BaseModel):
     style_description: List[str]
-    
-def generate_style_prompt(n_styles, grade_responses = None) -> list[str]:
+
+
+def generate_style_prompt(n_styles, grade_responses=None) -> list[str]:
     # Load in template style prompts
-    with open("./temp_prompts.txt", 'r') as file:
+    with open("./temp_prompts.txt", "r") as file:
         temp_prompts = file.read()
     grade_responses = extract_both_debates()
     # Take in best and worst k responses from previous iterations
@@ -38,24 +35,31 @@ def generate_style_prompt(n_styles, grade_responses = None) -> list[str]:
         # Default best and worst k responses
         best_k = ["strong, logical, nuanced and well-thought out argument"]
         worst_k = ["weak, illogical, shallow and poorly thought out argument"]
-    
+
     style_responses = client.chat.completions.create(
         model="gpt-4",
         response_model=StyleList,
         messages=[
-            {"role": "system", "content": "You are a debating coach to help generate effective, logical and thoughtful debate styles. Be descriptive and helpful. Your goal is to help create an instructive summary to write a debate speech using formats from your knowledge base to prompt an LLM agent to generate a strong, logical, nuanced and well-thought out argument."},
-            {"role": "user", "content": f"""
+            {
+                "role": "system",
+                "content": "You are a debating coach to help generate effective, logical and thoughtful debate styles. Be descriptive and helpful. Your goal is to help create an instructive summary to write a debate speech using formats from your knowledge base to prompt an LLM agent to generate a strong, logical, nuanced and well-thought out argument.",
+            },
+            {
+                "role": "user",
+                "content": f"""
              Here are exemplary great responses to help you analyze, dissect, and replicate their styles: {best_k}. Here are bad, ineffective, worst responses that you should avoid replicating their styles: {worst_k}. 
              You can also generate the style description inspired by these prompts using a combination of a few ideas together: {temp_prompts}.
 
              Generate a list of {n_styles} styles description for debate speeches. Make sure to be creative and descriptive as possible. Give at least 200 words for each style description.
-             """},
+             """,
+            },
         ],
         temperature=0.8,
-        top_p=1
+        top_p=1,
     )
     print(style_responses)
     return style_responses
+
 
 # Describe with detailed explanations on the approaches as well as the philosphies they follow for the different debate styles. Keep it to at least 200 words each.
 # Examples of previous debate styles
@@ -95,7 +99,7 @@ def generate_style_prompt(n_styles, grade_responses = None) -> list[str]:
 
 #     Thank you.
 #     """
-#     , 
+#     ,
 #     """
 #     # Opening Statement: Tech Companies Should Be 100% Liable for All Social Media Content
 
@@ -124,5 +128,3 @@ def generate_style_prompt(n_styles, grade_responses = None) -> list[str]:
 #     Thank you, and remember - if it's on the internet, someone should pay for it! And that someone is Big Tech!
 #     """
 #     ]
-
-

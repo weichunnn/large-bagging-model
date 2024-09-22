@@ -6,8 +6,9 @@ import weave
 import instructor
 from pydantic import BaseModel
 from openai import OpenAI
-
 weave.init('together-weave')
+
+from extract_findings import extract_both_debates
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -26,15 +27,15 @@ def generate_style_prompt(n_styles, grade_responses = None) -> list[str]:
     # Load in template style prompts
     with open("./temp_prompts.txt", 'r') as file:
         temp_prompts = file.read()
-    
+    grade_responses = extract_both_debates()
     # Take in best and worst k responses from previous iterations
     if grade_responses:
         best_k = grade_responses[0]
         worst_k = grade_responses[1]
     else:
         # Default best and worst k responses
-        best_k = "strong, logical, nuanced and well-thought out argument"
-        worst_k = "weak, illogical, shallow and poorly thought out argument"
+        best_k = ["strong, logical, nuanced and well-thought out argument"]
+        worst_k = ["weak, illogical, shallow and poorly thought out argument"]
     
     style_responses = client.chat.completions.create(
         model="gpt-4",
@@ -45,12 +46,13 @@ def generate_style_prompt(n_styles, grade_responses = None) -> list[str]:
              Here are exemplary great responses to help you analyze, dissect, and replicate their styles: {best_k}. Here are bad, ineffective, worst responses that you should avoid replicating their styles: {worst_k}. 
              You can also generate the style description inspired by these prompts using a combination of a few ideas together: {temp_prompts}.
 
-             Generate a list of {n_styles} styles description for debate speeches. Make sure to be creative and descriptive as possible.
+             Generate a list of {n_styles} styles description for debate speeches. Make sure to be creative and descriptive as possible. Give at least 200 words for each style description.
              """},
         ],
         temperature=0.8,
         top_p=1
     )
+    print(style_responses)
     return style_responses
 
 # Describe with detailed explanations on the approaches as well as the philosphies they follow for the different debate styles. Keep it to at least 200 words each.

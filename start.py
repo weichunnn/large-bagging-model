@@ -19,9 +19,9 @@ QUESTION = "Can alternative energy effectively replace fossil fuels?"
 FAMOUS_MODELS = [
     "openai/gpt-4o-2024-08-06",
     "meta-llama/llama-3.1-405b-instruct",
-    # "google/gemini-pro-1.5",
+    "google/gemini-pro-1.5",
     # "cohere/command-r-plus-08-2024",
-    # "anthropic/claude-3.5-sonnet",
+    "anthropic/claude-3.5-sonnet",
 ]
 
 
@@ -32,10 +32,6 @@ class Agent(BaseModel):
 
 class Scenario(BaseModel):
     agents: list[Agent]
-
-
-class AgentDebate(BaseModel):
-    argument: str
 
 
 def generate_user_content(question):
@@ -104,7 +100,7 @@ def simulate_debate(question=QUESTION, num_iterations=3, agent_model_map=None, d
     for i, (agent, style) in enumerate(zip(scenario.agents, debate_styles), 1):
         response = client.chat.completions.create(
             model=agent_model_map[agent.persona],
-            response_model=AgentDebate,
+            response_model=None,
             messages=[
                 {
                     "role": "system",
@@ -112,11 +108,12 @@ def simulate_debate(question=QUESTION, num_iterations=3, agent_model_map=None, d
                 },
                 {
                     "role": "user",
-                    "content": f"Provide an opening statement for the debate on the topic: {question}",
+                    "content": f"Provide an opening statement for the debate on the topic: {question}.",
                 },
             ],
         )
-        opening_statement = response.argument
+        opening_statement = response.choices[0].message.content
+
         debate_data["opening_statements"].append(
             {"agent": agent.persona, "statement": opening_statement}
         )
@@ -132,7 +129,7 @@ def simulate_debate(question=QUESTION, num_iterations=3, agent_model_map=None, d
 
             response = client.chat.completions.create(
                 model=agent_model_map[agent.persona],
-                response_model=AgentDebate,
+                response_model=None,
                 messages=[
                     {
                         "role": "system",
@@ -144,7 +141,7 @@ def simulate_debate(question=QUESTION, num_iterations=3, agent_model_map=None, d
                     },
                 ],
             )
-            argument = response.argument
+            argument = response.choices[0].message.content
             iteration_data["arguments"].append(
                 {"agent": agent.persona, "argument": argument}
             )
@@ -157,7 +154,7 @@ def simulate_debate(question=QUESTION, num_iterations=3, agent_model_map=None, d
         context = "\n".join(debate_history)
         response = client.chat.completions.create(
             model=agent_model_map[agent.persona],
-            response_model=AgentDebate,
+            response_model=None,
             messages=[
                 {
                     "role": "system",
@@ -169,7 +166,7 @@ def simulate_debate(question=QUESTION, num_iterations=3, agent_model_map=None, d
                 },
             ],
         )
-        argument = response.argument
+        argument = response.choices[0].message.content
         debate_data["closing_statements"].append(
             {"agent": agent.persona, "statement": argument}
         )

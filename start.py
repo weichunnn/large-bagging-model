@@ -4,7 +4,7 @@ import instructor
 from pydantic import BaseModel
 from openai import OpenAI
 from dotenv import load_dotenv
-import random
+import concurrent.futures
 
 load_dotenv()
 weave.init("together-weave")
@@ -18,9 +18,9 @@ QUESTION = "Can alternative energy effectively replace fossil fuels?"
 FAMOUS_MODELS = [
     "openai/gpt-4o-2024-08-06",
     "meta-llama/llama-3.1-405b-instruct",
-    "google/gemini-pro-1.5",
+    # "google/gemini-pro-1.5",
     # "cohere/command-r-plus-08-2024",
-    "anthropic/claude-3.5-sonnet"
+    # "anthropic/claude-3.5-sonnet",
 ]
 
 
@@ -87,8 +87,16 @@ def simulate_debate(question=QUESTION, num_iterations=3, agent_model_map=None):
 
     print(f"Debate Topic: {question}")
     print("Debate Participants:")
-    for agent, model in agent_model_map.items():
-        print(f"- {agent}: using {model}")
+    
+    # Ensure we have exactly two agents and two models
+    if len(scenario.agents) != 2 or len(agent_model_map) != 2:
+        raise ValueError("Scenario must have exactly 2 agents and 2 models for this setup.")
+    
+    # Assign models to agents based on their order, not their persona names
+    agent_model_list = list(agent_model_map.values())
+    for i, (agent, model) in enumerate(zip(scenario.agents, agent_model_list)):
+        print(f"- {agent.persona}: using {model}")
+        agent_model_map[agent.persona] = model  # Update the map with the correct persona
     print()
 
     # Collect opening statements
@@ -119,7 +127,6 @@ def simulate_debate(question=QUESTION, num_iterations=3, agent_model_map=None):
     for iteration in range(1, num_iterations + 1):
         iteration_data = {"iteration": iteration, "arguments": []}
         for i, agent in enumerate(scenario.agents, 1):
-            # Use the full debate history (opening statements + all previous arguments)
             context = "\n".join(debate_history)
 
             response = client.chat.completions.create(
@@ -146,7 +153,7 @@ def simulate_debate(question=QUESTION, num_iterations=3, agent_model_map=None):
 
     # Closing statements
     for i, agent in enumerate(scenario.agents, 1):
-        context = "\n".join(debate_history)  # Full debate history
+        context = "\n".join(debate_history)
         response = client.chat.completions.create(
             model=agent_model_map[agent.persona],
             response_model=AgentDebate,
@@ -168,31 +175,33 @@ def simulate_debate(question=QUESTION, num_iterations=3, agent_model_map=None):
 
     return debate_data
 
+def run_single_debate(subset):
+    print(f"\nRunning debate with models: {subset}")
+    scenario = generate_scenario(QUESTION)
+    if len(scenario.agents) != 2:
+        print("Error: Scenario must have exactly 2 agents for this setup.")
+        return None
+
+    agent_model_map = {
+        "agent1": subset[0],
+        "agent2": subset[1],
+    }
+
+    return simulate_debate(
+        question=QUESTION, num_iterations=DEBATE_ROUNDS, agent_model_map=agent_model_map
+    )
 
 def run_debates():
-    model_subsets = [FAMOUS_MODELS[i:i+2] for i in range(0, len(FAMOUS_MODELS), 2)]
-    all_debate_results = []
+    model_subsets = [FAMOUS_MODELS[i : i + 2] for i in range(0, len(FAMOUS_MODELS), 2)]
 
-    for subset in model_subsets:
-        print(f"\nRunning debate with models: {subset}")
-        scenario = generate_scenario(QUESTION)
-        if len(scenario.agents) != 2:
-            print("Error: Scenario must have exactly 2 agents for this setup.")
-            continue
-        
-        agent_model_map = {
-            scenario.agents[0].persona: subset[0],
-            scenario.agents[1].persona: subset[1]
-        }
-        
-        debate_result = simulate_debate(question=QUESTION, num_iterations=DEBATE_ROUNDS, agent_model_map=agent_model_map)
-        all_debate_results.append(debate_result)
-    
-    return all_debate_results
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        all_debate_results = list(executor.map(run_single_debate, model_subsets))
+
+    return [result for result in all_debate_results if result is not None]
+
 
 all_results = run_debates()
 
-# Print or process the results as needed
 for i, result in enumerate(all_results, 1):
     print(f"\nDebate {i} Results:")
     print(result)

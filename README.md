@@ -1,4 +1,6 @@
-# General Debate Project with Agent Arena
+# Large-Bagging-Model a.k.a LBM
+
+![Landing](assets/landing.png)
 
 ## Overview
 

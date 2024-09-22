@@ -27,8 +27,8 @@ class StyleList(BaseModel):
 
 def generate_style_prompt(n_styles, grade_responses=None) -> list[str]:
     # Load in template style prompts
-    with open("./temp_prompts.txt", "r") as file:
-        temp_prompts = file.read()
+    with open("app/styles.txt", "r") as file:
+        styles = file.read()
     grade_responses = extract_both_debates()
     # Take in best and worst k responses from previous iterations
     if grade_responses:
@@ -51,7 +51,7 @@ def generate_style_prompt(n_styles, grade_responses=None) -> list[str]:
                 "role": "user",
                 "content": f"""
              Here are exemplary great responses to help you analyze, dissect, and replicate their styles: {best_k}. Here are bad, ineffective, worst responses that you should avoid replicating their styles: {worst_k}. 
-             You can also generate the style description inspired by these prompts using a combination of a few ideas together: {temp_prompts}.
+             You can also generate the style description inspired by these prompts using a combination of a few ideas together: {styles}.
 
              Generate a list of {n_styles} styles description for debate speeches. Make sure to be creative and descriptive as possible. Give at least 200 words for each style description.
              """,

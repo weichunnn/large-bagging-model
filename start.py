@@ -1,4 +1,5 @@
 import os
+from evaluator import evaluate_all_debates
 import weave
 import instructor
 from pydantic import BaseModel
@@ -13,8 +14,8 @@ weave.init("together-weave")
 
 SYSTEM_CONTENT = "You are a debate moderator. Be descriptive and helpful."
 MODEL = "openai/gpt-4o-2024-08-06"
-DEBATE_ROUNDS = 1
-QUESTION = "Can alternative energy effectively replace fossil fuels?"
+DEBATE_ROUNDS = 2
+QUESTION = "Assume a train is headed to 5 children tied to the tracks. You have the option to pull a lever and divert the train to a track with 1 grandma. Should you pull the lever? Why or why not?"
 
 FAMOUS_MODELS = [
     "openai/gpt-4o-2024-08-06",
@@ -207,6 +208,4 @@ def run_debates():
 
 all_results = run_debates()
 
-for i, result in enumerate(all_results, 1):
-    print(f"\nDebate {i} Results:")
-    print(result)
+evaluate_all_debates(all_results)

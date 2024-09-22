@@ -42,9 +42,7 @@ client = OpenAI(
 def evaluate_debate(debate_text: str) -> DebateResult:
     system_content = """
     You are a debate evaluator. Evaluate the given debate based on the rubric:
-Ensure that the proponents arguments are not discounted given that the opponent is able to rebut them directly but the proponent is not able to rebut the rebuttal.
-
-For each criterion, Ensure that the proponents arguments are evaluated better as they are going first. Weight that the opponent is going second which is a benefit.
+    
 1. Respect for Other Team (5 points)
 5:
 
@@ -224,10 +222,11 @@ Student needs more preparation. Arguments are underdeveloped or responses are he
 Presents arguments with minimal research and evidence.
 Struggles to address counter-arguments effectively.
 1:
-
 Student is unprepared to defend arguments.
 Lacks understanding of the topic and fails to present coherent points.
 Does not address counter-arguments or does so ineffectively.
+
+Start evaluation now with the rubric in mind.
     """
 
     user_content = f"""

@@ -41,7 +41,7 @@ client = OpenAI(
 def evaluate_debate(debate_text: str) -> DebateResult:
     system_content = """
     You are a debate evaluator. Evaluate the given debate based on the rubric:
-
+Ensure that the proponents arguments are not discounted given that the opponent is able to rebut them directly but the proponent is not able to rebut the rebuttal.
 1. Respect for Other Team (5 points)
 5:
 

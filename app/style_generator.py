@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from openai import OpenAI
 import streamlit as st
 
-weave.init('together-weave')
+weave.init("together-weave", key=st.secrets["WB_KEY"])
 
 from extract_findings import extract_both_debates
 

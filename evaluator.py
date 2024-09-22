@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from openai import OpenAI
 from datetime import datetime
 import json
-
+import pickle
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -114,8 +114,11 @@ def format_debate_text(debate_data):
     return debate_text
 
 # Load the sample data
-with open('sample.txt', 'r') as file:
-    sample_data = json.load(file)
+# with open('sample.txt', 'r') as file:
+#     sample_data = json.load(file)
+
+
+
 
 # # Assuming the first debate in the list
 # debate_data = sample_data['debates'][0]
@@ -179,17 +182,19 @@ def evaluate_all_debates(sample_data):
     
     return all_evaluations
 
-# Evaluate all debates
-all_debate_evaluations = evaluate_all_debates(sample_data)
+if __name__ == "__main__":
+    sample_data = pickle.load(open('my_variable.pkl', 'rb'))
+    # Evaluate all debates
+    all_debate_evaluations = evaluate_all_debates(sample_data)
 
-# Write evaluations to JSON file
-def write_evaluations_to_file(evaluations):
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"all_debate_evaluations_{timestamp}.json"
-    
-    with open(filename, 'w') as f:
-        json.dump(evaluations, f, indent=4)
-    
-    print(f"All debate evaluations written to {filename}")
+    # Write evaluations to JSON file
+    def write_evaluations_to_file(evaluations):
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"all_debate_evaluations_{timestamp}.json"
+        
+        with open(filename, 'w') as f:
+            json.dump(evaluations, f, indent=4)
+        
+        print(f"All debate evaluations written to {filename}")
 
-write_evaluations_to_file(all_debate_evaluations)
+    write_evaluations_to_file(all_debate_evaluations)

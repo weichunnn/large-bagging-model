@@ -19,12 +19,6 @@ config = OpenAI(
 
 client = instructor.from_openai(config)
 
-# class StyleList(BaseModel):
-#     styles_description: list[str]
-# class StyleDescription(BaseModel):
-#     style_name: str
-#     description: str
-
 class StyleList(BaseModel):
     style_description: List[str]
     
@@ -128,4 +122,3 @@ def generate_style_prompt(n_styles, grade_responses = None) -> list[str]:
 #     ]
 
 
-print(generate_style_prompt(10,))

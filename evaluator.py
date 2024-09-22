@@ -243,25 +243,9 @@ Does not address counter-arguments or does so ineffectively.
     )
 
     return response
-import os
 
-def write_evaluations_to_file(evaluations):
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"all_debate_evaluations_{timestamp}.json"
-    
-    # Create a 'json' folder if it doesn't exist
-    json_folder = 'json'
-    os.makedirs(json_folder, exist_ok=True)
-    
-    # Write the file to the 'json' folder
-    filepath = os.path.join(json_folder, filename)
-    
-    with open(filepath, 'w') as f:
-        json.dump(evaluations, f, indent=4)
-    
-    print(f"All debate evaluations written to {filepath}")
 
-    return filepath
+
 
 def format_debate_text(debate_data):
     debate_text = f"Topic: {debate_data['topic']}\n\n"
@@ -349,6 +333,24 @@ def evaluate_all_debates(sample_data):
         }
     
     return all_evaluations
+
+def write_evaluations_to_file(evaluations):
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"all_debate_evaluations_{timestamp}.json"
+    
+    # Create a 'json' folder if it doesn't exist
+    json_folder = 'json'
+    os.makedirs(json_folder, exist_ok=True)
+    
+    # Write the file to the 'json' folder
+    filepath = os.path.join(json_folder, filename)
+    
+    with open(filepath, 'w') as f:
+        json.dump(evaluations, f, indent=4)
+    
+    print(f"All debate evaluations written to {filepath}")
+
+    return filepath
 
 
 if __name__ == "__main__":

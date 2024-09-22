@@ -73,7 +73,7 @@ def generate_scenario(question):
     )
 
 
-def simulate_debate(question=QUESTION, num_iterations=3):
+def simulate_debate(question=QUESTION, num_iterations=3, agent_model_map=None):
     scenario = generate_scenario(question)
 
     debate_data = {
@@ -85,10 +85,6 @@ def simulate_debate(question=QUESTION, num_iterations=3):
 
     debate_history = []
 
-    agent_models = random.sample(FAMOUS_MODELS, len(scenario.agents))
-    agent_model_map = {
-        agent.persona: model for agent, model in zip(scenario.agents, agent_models)
-    }
     print(f"Debate Topic: {question}")
     print("Debate Participants:")
     for agent, model in agent_model_map.items():
@@ -173,5 +169,30 @@ def simulate_debate(question=QUESTION, num_iterations=3):
     return debate_data
 
 
-debate_result = simulate_debate()
-print(debate_result)
+def run_debates():
+    model_subsets = [FAMOUS_MODELS[i:i+2] for i in range(0, len(FAMOUS_MODELS), 2)]
+    all_debate_results = []
+
+    for subset in model_subsets:
+        print(f"\nRunning debate with models: {subset}")
+        scenario = generate_scenario(QUESTION)
+        if len(scenario.agents) != 2:
+            print("Error: Scenario must have exactly 2 agents for this setup.")
+            continue
+        
+        agent_model_map = {
+            scenario.agents[0].persona: subset[0],
+            scenario.agents[1].persona: subset[1]
+        }
+        
+        debate_result = simulate_debate(question=QUESTION, num_iterations=DEBATE_ROUNDS, agent_model_map=agent_model_map)
+        all_debate_results.append(debate_result)
+    
+    return all_debate_results
+
+all_results = run_debates()
+
+# Print or process the results as needed
+for i, result in enumerate(all_results, 1):
+    print(f"\nDebate {i} Results:")
+    print(result)

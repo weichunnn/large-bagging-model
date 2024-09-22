@@ -35,7 +35,7 @@ num_iterations = st.number_input(
     help="Select the number of iterations for each debate",
 )
 
-models_1 = st.multiselect(
+models = st.selectbox(
     "Select Proponent Model",
     options=[
         "openai/gpt-4o-2024-08-06",
@@ -43,32 +43,10 @@ models_1 = st.multiselect(
         "google/gemini-pro-1.5",
         "anthropic/claude-3.5-sonnet",
     ],
-    default=[
-        "openai/gpt-4o-2024-08-06",
-        "meta-llama/llama-3.1-405b-instruct",
-    ],
     help="Select the models to participate in the debates",
 )
 
-models_2 = st.multiselect(
-    "Select Opponent Model",
-    options=[
-        "openai/gpt-4o-2024-08-06",
-        "meta-llama/llama-3.1-405b-instruct",
-        "google/gemini-pro-1.5",
-        "anthropic/claude-3.5-sonnet",
-    ],
-    default=[
-        "google/gemini-pro-1.5",
-        "anthropic/claude-3.5-sonnet",
-    ],
-    help="Select additional models to participate in the debates",
-)
-
-# Combine the two model selections
-models = []
-for m1, m2 in zip(models_1, models_2):
-    models.extend([m1, m2])
+models = [models] * num_debates * 2
 
 k = st.number_input(
     "Top K debates to display",
@@ -91,7 +69,6 @@ if st.button("Run Debate"):
 
     debates = []
     with st.spinner("Running debates..."):
-        print(len(models))
         debates = run_debates(num_debates, debate_topic, models, num_iterations)
 
     st.success("Debate completed!")

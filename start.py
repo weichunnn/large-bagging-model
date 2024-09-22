@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from openai import OpenAI
 from dotenv import load_dotenv
 import concurrent.futures
+from style_generator import generate_style_prompt
 
 load_dotenv()
 weave.init("together-weave")
@@ -73,7 +74,7 @@ def generate_scenario(question):
     )
 
 
-def simulate_debate(question=QUESTION, num_iterations=3, agent_model_map=None):
+def simulate_debate(question=QUESTION, num_iterations=3, agent_model_map=None, debate_styles=None):
     scenario = generate_scenario(question)
 
     debate_data = {
@@ -100,14 +101,14 @@ def simulate_debate(question=QUESTION, num_iterations=3, agent_model_map=None):
     print()
 
     # Collect opening statements
-    for i, agent in enumerate(scenario.agents, 1):
+    for i, (agent, style) in enumerate(zip(scenario.agents, debate_styles), 1):
         response = client.chat.completions.create(
             model=agent_model_map[agent.persona],
             response_model=AgentDebate,
             messages=[
                 {
                     "role": "system",
-                    "content": f"You are {agent.persona}. {agent.instructions}",
+                    "content": f"You are {agent.persona}. {agent.instructions} Debate in the following style: {style}",
                 },
                 {
                     "role": "user",
@@ -175,9 +176,10 @@ def simulate_debate(question=QUESTION, num_iterations=3, agent_model_map=None):
 
     return debate_data
 
-def run_single_debate(subset):
+def run_single_debate(subset, styles):
     print(f"\nRunning debate with models: {subset}")
     scenario = generate_scenario(QUESTION)
+
     if len(scenario.agents) != 2:
         print("Error: Scenario must have exactly 2 agents for this setup.")
         return None
@@ -188,14 +190,20 @@ def run_single_debate(subset):
     }
 
     return simulate_debate(
-        question=QUESTION, num_iterations=DEBATE_ROUNDS, agent_model_map=agent_model_map
+        question=QUESTION, num_iterations=DEBATE_ROUNDS, agent_model_map=agent_model_map, debate_styles=styles
     )
 
 def run_debates():
     model_subsets = [FAMOUS_MODELS[i : i + 2] for i in range(0, len(FAMOUS_MODELS), 2)]
-
+    styles = generate_style_prompt(len(model_subsets) * 2)  # Generate twice as many styles
+    
+    debate_tasks = []
+    for i, subset in enumerate(model_subsets):
+        debate_styles = styles.style_description[i*2 : i*2+2]  # Get two unique styles for each debate
+        debate_tasks.append((subset, debate_styles))
+    
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        all_debate_results = list(executor.map(run_single_debate, model_subsets))
+        all_debate_results = list(executor.map(lambda x: run_single_debate(*x), debate_tasks))
 
     return [result for result in all_debate_results if result is not None]
 

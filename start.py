@@ -10,7 +10,7 @@ from style_generator import generate_style_prompt
 import streamlit as st
 
 load_dotenv()
-weave.init("together-weave")
+weave.init("together-weave", key=st.secrets["WB_KEY"])
 
 
 SYSTEM_CONTENT = "You are a debate moderator. Be descriptive and helpful."

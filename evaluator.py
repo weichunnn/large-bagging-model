@@ -159,7 +159,7 @@ with open('sample.txt', 'r') as file:
 def evaluate_all_debates(sample_data):
     all_evaluations = {}
     
-    for index, debate in enumerate(sample_data['debates'], 1):
+    for index, debate in enumerate(sample_data, 1):
         debate_text = format_debate_text(debate)
         evaluation = evaluate_debate(debate_text)
         
@@ -167,12 +167,12 @@ def evaluate_all_debates(sample_data):
             "debate_text": debate_text,
             "evaluation": {
                 "proponent": {
-                    "score": evaluation.proponent.total_points,
-                    "reasoning": evaluation.proponent.comments
+                    "score": evaluation.choices[0].message.parsed.proponent.total_points,
+                    "reasoning": evaluation.choices[0].message.parsed.proponent.comments
                 },
                 "opponent": {
-                    "score": evaluation.opponent.total_points,
-                    "reasoning": evaluation.opponent.comments
+                    "score": evaluation.choices[0].message.parsed.opponent.total_points,
+                    "reasoning": evaluation.choices[0].message.parsed.opponent.comments
                 }
             }
         }

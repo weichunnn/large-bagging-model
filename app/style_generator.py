@@ -6,6 +6,8 @@ import weave
 import instructor
 from pydantic import BaseModel
 from openai import OpenAI
+import streamlit as st
+
 weave.init('together-weave')
 
 from extract_findings import extract_both_debates
@@ -14,7 +16,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 config = OpenAI(
-    api_key=os.environ.get("OPENROUTER_API_KEY"),
+    api_key=st.secrets["OPENROUTER_API_KEY"],
     base_url="https://openrouter.ai/api/v1",
 )
 

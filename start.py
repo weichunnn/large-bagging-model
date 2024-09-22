@@ -77,46 +77,42 @@ def simulate_debate(question, num_iterations, agent_model_map, debate_styles):
 
     print(f"Debate Topic: {question}")
     print("Debate Participants:")
-
+    
     # Ensure we have exactly two agents and two models
     if len(scenario.agents) != 2 or len(agent_model_map) != 2:
-        raise ValueError(
-            "Scenario must have exactly 2 agents and 2 models for this setup."
-        )
-
+        raise ValueError("Scenario must have exactly 2 agents and 2 models for this setup.")
+    
     # Assign models to agents based on their order, not their persona names
     agent_model_list = list(agent_model_map.values())
     for i, (agent, model) in enumerate(zip(scenario.agents, agent_model_list)):
         print(f"- {agent.persona}: using {model}")
-        agent_model_map[
-            agent.persona
-        ] = model  # Update the map with the correct persona
+        agent_model_map[agent.persona] = model  # Update the map with the correct persona
     print()
 
     # Collect opening statements
-    # for i, (agent, style) in enumerate(zip(scenario.agents, debate_styles), 1):
-    # response = client.chat.completions.create(
-    #    model=agent_model_map[agent.persona],
-    #    response_model=None,
-    #    messages=[
-    #        {
-    #            "role": "system",
-    #            "content": f"You are {agent.persona}. {agent.instructions} Debate in the following style: {style}",
-    #        },
-    #        {
-    #            "role": "user",
-    #            "content": f"Provide an opening statement for the debate on the topic: {question}.",
-    #        },
-    #    ],
-    # )
-    # opening_statement = response.choices[0].message.content
+    for i, (agent, style) in enumerate(zip(scenario.agents, debate_styles), 1):
+        response = client.chat.completions.create(
+            model=agent_model_map[agent.persona],
+            response_model=None,
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"You are {agent.persona}. {agent.instructions} Debate in the following style: {style}",
+                },
+                {
+                    "role": "user",
+                    "content": f"Provide an opening statement for the debate on the topic: {question}.",
+                },
+            ],
+        )
+        opening_statement = response.choices[0].message.content
 
-    # debate_data["opening_statements"].append(
-    #    {"agent": agent.persona, "statement": opening_statement}
-    # )
-    # debate_history.append(
-    #    f"Agent {i} ({agent.persona}) Opening Statement: {opening_statement}"
-    # )
+        debate_data["opening_statements"].append(
+            {"agent": agent.persona, "statement": opening_statement}
+        )
+        debate_history.append(
+            f"Agent {i} ({agent.persona}) Opening Statement: {opening_statement}"
+        )
 
     # Debate iterations
     for iteration in range(1, num_iterations + 1):
@@ -134,7 +130,7 @@ def simulate_debate(question, num_iterations, agent_model_map, debate_styles):
                     },
                     {
                         "role": "user",
-                        "content": f"Given the debate history:\n{context}\n\nProvide your argument for iteration {iteration} of the debate. Keep it concise and look at the above arguments to make your point stronger. Speak like a debater and like a person. IT MUST BE LESS THAN 50 WORDS",
+                        "content": f"Given the debate history:\n{context}\n\nProvide your argument for iteration {iteration} of the debate.",
                     },
                 ],
             )
@@ -147,29 +143,28 @@ def simulate_debate(question, num_iterations, agent_model_map, debate_styles):
         debate_data["iterations"].append(iteration_data)
 
     # Closing statements
-    # for i, agent in enumerate(scenario.agents, 1):
-    #    context = "\n".join(debate_history)
-    #    response = client.chat.completions.create(
-    #        model=agent_model_map[agent.persona],
-    #        response_model=None,
-    #        messages=[
-    #            {
-    #                "role": "system",
-    #                "content": f"You are {agent.persona}. {agent.instructions}",
-    #            },
-    #            {
-    #                "role": "user",
-    #                "content": f"Given the full debate history:\n{context}\n\nProvide your closing statement for the debate.",
-    #            },
-    #        ],
-    #    )
-    #    argument = response.choices[0].message.content
-    #    debate_data["closing_statements"].append(
-    #        {"agent": agent.persona, "statement": argument}
-    #    )
+    for i, agent in enumerate(scenario.agents, 1):
+        context = "\n".join(debate_history)
+        response = client.chat.completions.create(
+            model=agent_model_map[agent.persona],
+            response_model=None,
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"You are {agent.persona}. {agent.instructions}",
+                },
+                {
+                    "role": "user",
+                    "content": f"Given the full debate history:\n{context}\n\nProvide your closing statement for the debate.",
+                },
+            ],
+        )
+        argument = response.choices[0].message.content
+        debate_data["closing_statements"].append(
+            {"agent": agent.persona, "statement": argument}
+        )
 
     return debate_data
-
 
 def run_single_debate(question, num_iterations, subset, styles):
     print(f"\nRunning debate with models: {subset}")
@@ -185,34 +180,28 @@ def run_single_debate(question, num_iterations, subset, styles):
     }
 
     return simulate_debate(
-        question=question,
-        num_iterations=num_iterations,
-        agent_model_map=agent_model_map,
-        debate_styles=styles,
+        question=question, 
+        num_iterations=num_iterations, 
+        agent_model_map=agent_model_map, 
+        debate_styles=styles
     )
 
-
 def run_debates(num_debates, question, models, num_iterations):
-    if len(models) < num_debates * 2:
+    if num_debates * 2 > len(models):
         raise ValueError("Not enough models for the requested number of debates.")
-
-    model_subsets = [models[i : i + 2] for i in range(0, num_debates * 2, 2)]
+    
+    model_subsets = [models[i:i+2] for i in range(0, num_debates * 2, 2)]
     styles = generate_style_prompt(num_debates * 2)  # Generate twice as many styles
-
+    
     debate_tasks = []
     for i, subset in enumerate(model_subsets):
-        debate_styles = styles.style_description[
-            i * 2 : i * 2 + 2
-        ]  # Get two unique styles for each debate
+        debate_styles = styles.style_description[i*2 : i*2+2]  # Get two unique styles for each debate
         debate_tasks.append((question, num_iterations, subset, debate_styles))
-
+    
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        all_debate_results = list(
-            executor.map(lambda x: run_single_debate(*x), debate_tasks)
-        )
+        all_debate_results = list(executor.map(lambda x: run_single_debate(*x), debate_tasks))
 
     return [result for result in all_debate_results if result is not None]
-
 
 # Example usage
 FAMOUS_MODELS = [
@@ -223,19 +212,11 @@ FAMOUS_MODELS = [
     "anthropic/claude-3.5-sonnet",
 ]
 
+custom_question = "Should artificial intelligence be given the same rights as humans? Why or why not?"
+selected_models = FAMOUS_MODELS[:4]  # Use the first 4 models from FAMOUS_MODELS
+num_debates = 2
+num_iterations = 3
 
-def main():
-    custom_question = "Should artificial intelligence be given the same rights as humans? Why or why not?"
-    selected_models = FAMOUS_MODELS[:4]  # Use the first 4 models from FAMOUS_MODELS
-    num_debates = 2
-    num_iterations = 3
+all_results = run_debates(num_debates, custom_question, selected_models, num_iterations)
 
-    all_results = run_debates(
-        num_debates, custom_question, selected_models, num_iterations
-    )
-
-    evaluate_all_debates(all_results)
-
-
-if __name__ == "__main__":
-    main()
+evaluate_all_debates(all_results)

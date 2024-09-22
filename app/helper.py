@@ -28,16 +28,21 @@ def sort_debates(debates, k, sort_type="top"):
     return dict(sorted_debates[:k])
 
 
-# Read the debate data from all_debate_evaluations_20240921_191635.json
-with open("all_debate_evaluations_20240921_191635.json", "r") as file:
-    debates = json.load(file)
+def main():
+    # Read the debate data from all_debate_evaluations_20240921_191635.json
+    with open("all_debate_evaluations_20240921_191635.json", "r") as file:
+        debates = json.load(file)
 
-# Test case 1: Get top 2 debates
-print("Top 2 debates:")
-top_2_debates = sort_debates(debates, k=2, sort_type="top")
-pprint(top_2_debates)
+    # Test case 1: Get top 2 debates
+    print("Top 2 debates:")
+    top_2_debates = sort_debates(debates, k=2, sort_type="top")
+    pprint(top_2_debates)
 
-# Test case 2: Get bottom 2 debates
-print("Bottom 2 debates:")
-bottom_2_debates = sort_debates(debates, k=2, sort_type="bottom")
-pprint(bottom_2_debates)
+    # Test case 2: Get bottom 2 debates
+    print("Bottom 2 debates:")
+    bottom_2_debates = sort_debates(debates, k=2, sort_type="bottom")
+    pprint(bottom_2_debates)
+
+
+if __name__ == "__main__":
+    main()

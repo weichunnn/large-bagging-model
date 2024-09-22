@@ -18,14 +18,9 @@ QUESTION = "Can alternative energy effectively replace fossil fuels?"
 FAMOUS_MODELS = [
     "openai/gpt-4o-2024-08-06",
     "meta-llama/llama-3.1-405b-instruct",
-    "anthropic/claude-3-sonnet-20240229",
-    "google/gemini-pro",
-    "anthropic/claude-2.1",
-    "openai/gpt-3.5-turbo",
-    "meta-llama/llama-2-70b-chat",
-    "mistralai/mistral-7b-instruct",
-    "cohere/command-nightly",
-    "ai21/j2-ultra"
+    "google/gemini-pro-1.5",
+    # "cohere/command-r-plus-08-2024",
+    "anthropic/claude-3.5-sonnet"
 ]
 
 
@@ -53,7 +48,7 @@ def generate_user_content(question):
     Then, create a debate template that can be used to argue for or against each subject of interest (i.e., instructions).
 
     Note:
-    1. There should always be only 2 personas in a debate: For and Against.
+    1. There should always be only 2 personas in a debate: For (Proponent) and Against (Opponent).
     2. The debate should be structured in such a way that it is easy to follow and understand.
     """
 
